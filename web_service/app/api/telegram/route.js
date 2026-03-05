@@ -30,7 +30,8 @@ export async function POST(req) {
           `👋 Welcome to *GitHub Assistant Bot*!\n\n`
           + `To use me, you need to register first:\n`
           + `🔗 [Register here](${APP_URL})\n\n`
-          + `After registering, come back and type /link to connect your Telegram.`
+          + `After registering, come back and type /link to connect your Telegram.`,
+          { parse_mode: "Markdown" }
         );
       } else {
         await sendTelegramMessage(chatId,
@@ -38,7 +39,8 @@ export async function POST(req) {
           + `Just type your GitHub question and I'll help you.\n`
           + `• /me — Your profile\n`
           + `• /clear — Clear chat history\n`
-          + `• /help — All commands`
+          + `• /help — All commands`,
+          { parse_mode: "Markdown" }
         );
       }
       return NextResponse.json({ ok: true });
@@ -51,7 +53,8 @@ export async function POST(req) {
         await sendTelegramMessage(chatId,
           `⚠️ Usage: \`/link your_username your_password\`\n\n`
           + `This connects your Telegram to your website account.\n`
-          + `Don't have one? Register at: ${APP_URL}`
+          + `Don't have one? Register at: ${APP_URL}`,
+          { parse_mode: "Markdown" }
         );
         return NextResponse.json({ ok: true });
       }
@@ -74,7 +77,8 @@ export async function POST(req) {
       await sendTelegramMessage(chatId,
         `✅ Linked! Welcome *${found.username}*.\n\n`
         + `Your GitHub token: ${found.githubToken ? "✅ Connected" : "❌ Not set — add it on the website"}\n\n`
-        + `Now just type your GitHub questions here!`
+        + `Now just type your GitHub questions here!`,
+        { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
     }
@@ -85,7 +89,8 @@ export async function POST(req) {
         `🔒 You're not registered yet.\n\n`
         + `1️⃣ Register at: ${APP_URL}\n`
         + `2️⃣ Come back and type: \`/link username password\`\n\n`
-        + `Then you can use all GitHub features!`
+        + `Then you can use all GitHub features!`,
+        { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
     }
@@ -97,7 +102,8 @@ export async function POST(req) {
         + `📱 Phone: ${user.phone || "not set"}\n`
         + `🐙 GitHub: ${user.githubToken ? "✅ Connected" : "❌ Not set"}\n`
         + `💬 Messages: ${user.messageCount}\n`
-        + `\nManage profile: ${APP_URL}/dashboard`
+        + `\nManage profile: ${APP_URL}/dashboard`,
+        { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
     }
@@ -114,7 +120,8 @@ export async function POST(req) {
         + `• "Create a repo called my-app"\n`
         + `• "List my repositories"\n`
         + `• "Push a file to my-app"\n\n`
-        + `🔧 Manage settings: ${APP_URL}/dashboard`
+        + `🔧 Manage settings: ${APP_URL}/dashboard`,
+        { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
     }
@@ -131,7 +138,8 @@ export async function POST(req) {
       await sendTelegramMessage(chatId,
         `⚠️ You haven't set your GitHub token yet.\n\n`
         + `Add it on the website: ${APP_URL}/dashboard\n`
-        + `Then your GitHub commands will work!`
+        + `Then your GitHub commands will work!`,
+        { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
     }
