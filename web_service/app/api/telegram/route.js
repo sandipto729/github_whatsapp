@@ -27,19 +27,28 @@ export async function POST(req) {
     if (text.trim().toLowerCase() === "/start") {
       if (!user) {
         await sendTelegramMessage(chatId,
-          `👋 Welcome to *GitHub Assistant Bot*!\n\n`
+          `👋 Welcome to *DevOps Assistant Bot*!\n\n`
+          + `I can help you with *GitHub* and *Docker Hub* operations.\n\n`
           + `To use me, you need to register first:\n`
           + `🔗 [Register here](${APP_URL})\n\n`
           + `After registering, come back and type /link to connect your Telegram.`,
           { parse_mode: "Markdown" }
         );
       } else {
+        const missingCreds = [];
+        if (!user.githubToken) missingCreds.push("🐙 GitHub token");
+        if (!(user.dockerUsername && user.dockerPAT)) missingCreds.push("🐳 Docker Hub credentials");
+        const credsWarning = missingCreds.length > 0
+          ? `\n\n⚠️ *Missing:* ${missingCreds.join(", ")}\nAdd them at: ${APP_URL}/dashboard`
+          : "";
         await sendTelegramMessage(chatId,
           `🚀 Welcome back *${user.username}*!\n\n`
-          + `Just type your GitHub question and I'll help you.\n`
+          + `I can help with *GitHub* and *Docker Hub* operations.\n`
+          + `Just type your question and I'll help you.\n\n`
           + `• /me — Your profile\n`
           + `• /clear — Clear chat history\n`
-          + `• /help — All commands`,
+          + `• /help — All commands`
+          + credsWarning,
           { parse_mode: "Markdown" }
         );
       }
@@ -76,8 +85,10 @@ export async function POST(req) {
 
       await sendTelegramMessage(chatId,
         `✅ Linked! Welcome *${found.username}*.\n\n`
-        + `Your GitHub token: ${found.githubToken ? "✅ Connected" : "❌ Not set — add it on the website"}\n\n`
-        + `Now just type your GitHub questions here!`,
+        + `🐙 GitHub: ${found.githubToken ? "✅ Connected" : "❌ Not set"}\n`
+        + `🐳 Docker Hub: ${found.dockerUsername && found.dockerPAT ? "✅ " + found.dockerUsername : "❌ Not set"}\n\n`
+        + `${!found.githubToken || !(found.dockerUsername && found.dockerPAT) ? "⚠️ Add missing credentials at: " + APP_URL + "/dashboard\n\n" : ""}`
+        + `Now just type your questions here — I help with GitHub *and* Docker Hub!`,
         { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
@@ -89,7 +100,7 @@ export async function POST(req) {
         `🔒 You're not registered yet.\n\n`
         + `1️⃣ Register at: ${APP_URL}\n`
         + `2️⃣ Come back and type: \`/link username password\`\n\n`
-        + `Then you can use all GitHub features!`,
+        + `Then you can use all GitHub & Docker Hub features!`,
         { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
@@ -97,13 +108,22 @@ export async function POST(req) {
 
     // /me
     if (text.trim().toLowerCase() === "/me") {
+      const ghStatus = user.githubToken ? "✅ Connected" : "❌ Not set";
+      const dkStatus = user.dockerUsername && user.dockerPAT ? "✅ " + user.dockerUsername : "❌ Not set";
+      const missingList = [];
+      if (!user.githubToken) missingList.push("GitHub token");
+      if (!(user.dockerUsername && user.dockerPAT)) missingList.push("Docker Hub credentials");
+      const addHint = missingList.length > 0
+        ? `\n\n⚠️ *Add missing:* ${missingList.join(", ")}\n🔗 ${APP_URL}/dashboard`
+        : "";
       await sendTelegramMessage(chatId,
         `👤 *${user.username}*\n`
         + `📱 Phone: ${user.phone || "not set"}\n`
-        + `🐙 GitHub: ${user.githubToken ? "✅ Connected" : "❌ Not set"}\n`
-        + `� Docker Hub: ${user.dockerUsername && user.dockerPAT ? "✅ " + user.dockerUsername : "❌ Not set"}\n`
-        + `�💬 Messages: ${user.messageCount}\n`
-        + `\nManage profile: ${APP_URL}/dashboard`,
+        + `🐙 GitHub: ${ghStatus}\n`
+        + `🐳 Docker Hub: ${dkStatus}\n`
+        + `💬 Messages: ${user.messageCount}`
+        + addHint
+        + `\n\n🔧 Manage profile: ${APP_URL}/dashboard`,
         { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
@@ -117,10 +137,15 @@ export async function POST(req) {
         + `/me — Your profile\n`
         + `/clear — Clear chat history\n`
         + `/help — This menu\n\n`
-        + `💡 Or just type in plain English:\n`
+        + `🐙 *GitHub examples:*\n`
         + `• "Create a repo called my-app"\n`
         + `• "List my repositories"\n`
         + `• "Push a file to my-app"\n\n`
+        + `🐳 *Docker Hub examples:*\n`
+        + `• "List my Docker Hub repos"\n`
+        + `• "Search Docker images for nginx"\n`
+        + `• "Push this repo to Docker Hub"\n`
+        + `• "List tags for my-app image"\n\n`
         + `🔧 Manage settings: ${APP_URL}/dashboard`,
         { parse_mode: "Markdown" }
       );
@@ -135,10 +160,14 @@ export async function POST(req) {
     }
 
     // ── Forward to AI agent ──
-    if (!user.githubToken && !(user.dockerUsername && user.dockerPAT)) {
+    const missingServices = [];
+    if (!user.githubToken) missingServices.push("🐙 GitHub token");
+    if (!(user.dockerUsername && user.dockerPAT)) missingServices.push("🐳 Docker Hub credentials");
+    if (missingServices.length === 2) {
       await sendTelegramMessage(chatId,
-        `⚠️ You haven't set your GitHub token or Docker Hub credentials yet.\n\n`
-        + `Add them on the website: ${APP_URL}/dashboard\n`
+        `⚠️ You haven't set any credentials yet.\n\n`
+        + `Missing:\n${missingServices.join("\n")}\n\n`
+        + `Add them at: ${APP_URL}/dashboard\n`
         + `Then your commands will work!`,
         { parse_mode: "Markdown" }
       );
