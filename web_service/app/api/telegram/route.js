@@ -101,7 +101,8 @@ export async function POST(req) {
         `👤 *${user.username}*\n`
         + `📱 Phone: ${user.phone || "not set"}\n`
         + `🐙 GitHub: ${user.githubToken ? "✅ Connected" : "❌ Not set"}\n`
-        + `💬 Messages: ${user.messageCount}\n`
+        + `� Docker Hub: ${user.dockerUsername && user.dockerPAT ? "✅ " + user.dockerUsername : "❌ Not set"}\n`
+        + `�💬 Messages: ${user.messageCount}\n`
         + `\nManage profile: ${APP_URL}/dashboard`,
         { parse_mode: "Markdown" }
       );
@@ -134,11 +135,11 @@ export async function POST(req) {
     }
 
     // ── Forward to AI agent ──
-    if (!user.githubToken) {
+    if (!user.githubToken && !(user.dockerUsername && user.dockerPAT)) {
       await sendTelegramMessage(chatId,
-        `⚠️ You haven't set your GitHub token yet.\n\n`
-        + `Add it on the website: ${APP_URL}/dashboard\n`
-        + `Then your GitHub commands will work!`,
+        `⚠️ You haven't set your GitHub token or Docker Hub credentials yet.\n\n`
+        + `Add them on the website: ${APP_URL}/dashboard\n`
+        + `Then your commands will work!`,
         { parse_mode: "Markdown" }
       );
       return NextResponse.json({ ok: true });
@@ -159,11 +160,15 @@ export async function POST(req) {
         body: JSON.stringify({
           message: text,
           history: history.length > 0 ? history : undefined,
-          github_token: user.githubToken,
+          github_token: user.githubToken || undefined,
+          docker_username: user.dockerUsername || undefined,
+          docker_pat: user.dockerPAT || undefined,
           user_id: userId,
           user_context: {
             username: user.username,
             has_github_token: !!user.githubToken,
+            has_docker_token: !!(user.dockerUsername && user.dockerPAT),
+            docker_username: user.dockerUsername || null,
             phone: user.phone || null,
             message_count: user.messageCount,
           },

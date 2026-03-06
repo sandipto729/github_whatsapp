@@ -26,6 +26,8 @@ export async function GET(req) {
         phone: user.phone,
         githubToken: user.githubToken ? "••••" + user.githubToken.slice(-4) : "",
         hasGithub: !!user.githubToken,
+        dockerUsername: user.dockerUsername || "",
+        hasDocker: !!(user.dockerUsername && user.dockerPAT),
         chatId: user.chatId || null,
         messageCount: user.messageCount,
         createdAt: user.createdAt,
@@ -43,12 +45,14 @@ export async function PUT(req) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-    const { phone, githubToken } = await req.json();
+    const { phone, githubToken, dockerUsername, dockerPAT } = await req.json();
     const user = await User.findOne({ username: session.user.username });
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     if (phone !== undefined) user.phone = phone;
     if (githubToken !== undefined) user.githubToken = githubToken;
+    if (dockerUsername !== undefined) user.dockerUsername = dockerUsername;
+    if (dockerPAT !== undefined) user.dockerPAT = dockerPAT;
     await user.save();
 
     return NextResponse.json({ ok: true, message: "Profile updated" });

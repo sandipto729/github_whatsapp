@@ -16,8 +16,8 @@ load_dotenv()
 from chat.agent import run_agent
 
 app = FastAPI(
-    title="GitHub Agent Server",
-    description="Agentic chatbot powered by OpenAI Agents SDK for GitHub operations",
+    title="DevOps Agent Server",
+    description="Agentic chatbot powered by OpenAI Agents SDK for GitHub & Docker Hub operations",
     version="1.0.0",
 )
 
@@ -48,6 +48,14 @@ class ChatRequest(BaseModel):
         None,
         description="User's personal GitHub token (overrides server default)",
     )
+    docker_username: Optional[str] = Field(
+        None,
+        description="User's Docker Hub username",
+    )
+    docker_pat: Optional[str] = Field(
+        None,
+        description="User's Docker Hub personal access token",
+    )
     user_context: Optional[dict] = Field(
         None,
         description="User profile info (username, has_github_token, phone, etc.)",
@@ -66,7 +74,7 @@ class ChatResponse(BaseModel):
 
 @app.get("/", tags=["Health"])
 async def health_check():
-    return {"status": "ok", "message": "GitHub Agent Server is running 🚀"}
+    return {"status": "ok", "message": "DevOps Agent Server is running 🚀"}
 
 
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
@@ -81,6 +89,8 @@ async def chat(req: ChatRequest):
             user_message=req.message,
             conversation_history=history,
             github_token=req.github_token,
+            docker_username=req.docker_username,
+            docker_pat=req.docker_pat,
             user_context=req.user_context,
             user_id=req.user_id,
         )

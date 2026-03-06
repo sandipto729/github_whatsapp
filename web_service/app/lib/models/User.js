@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema(
     username: { type: String, default: "" },
     phone: { type: String, default: "" },
     githubToken: { type: String, default: "" },
+    dockerUsername: { type: String, default: "" },
+    dockerPAT: { type: String, default: "" },
     messageCount: { type: Number, default: 0 },
     password: { type: String, required: true },
   },

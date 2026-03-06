@@ -10,6 +10,8 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [phone, setPhone] = useState("");
   const [githubToken, setGithubToken] = useState("");
+  const [dockerUsername, setDockerUsername] = useState("");
+  const [dockerPAT, setDockerPAT] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -42,6 +44,8 @@ export default function Dashboard() {
     const body = {};
     if (phone) body.phone = phone;
     if (githubToken) body.githubToken = githubToken;
+    if (dockerUsername) body.dockerUsername = dockerUsername;
+    if (dockerPAT) body.dockerPAT = dockerPAT;
 
     const res = await fetch("/api/user", {
       method: "PUT",
@@ -55,6 +59,7 @@ export default function Dashboard() {
     if (res.ok) {
       setMsg("✅ Saved!");
       setGithubToken("");
+      setDockerPAT("");
       fetchProfile(session.user.username);
     } else {
       setMsg("❌ " + data.error);
@@ -107,6 +112,10 @@ export default function Dashboard() {
                 <span>{user.hasGithub ? `✅ ${user.githubToken}` : "❌ Not connected"}</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-zinc-400">Docker Hub</span>
+                <span>{user.hasDocker ? `✅ ${user.dockerUsername}` : "❌ Not connected"}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-zinc-400">Telegram</span>
                 <span>{user.chatId ? "✅ Linked" : "❌ Not linked"}</span>
               </div>
@@ -145,6 +154,39 @@ export default function Dashboard() {
                   Get yours from{" "}
                   <a href="https://github.com/settings/tokens" target="_blank" className="text-blue-400 hover:underline">
                     github.com/settings/tokens
+                  </a>
+                </p>
+              </div>
+
+              <hr className="border-zinc-700" />
+
+              <div>
+                <label className="block text-xs text-zinc-400 mb-1">
+                  Docker Hub Username
+                </label>
+                <input
+                  type="text"
+                  value={dockerUsername}
+                  onChange={(e) => setDockerUsername(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="mydockerhubuser"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-zinc-400 mb-1">
+                  Docker Hub PAT <span className="text-zinc-600">(personal access token)</span>
+                </label>
+                <input
+                  type="password"
+                  value={dockerPAT}
+                  onChange={(e) => setDockerPAT(e.target.value)}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="dckr_pat_xxxxxxxxxxxx"
+                />
+                <p className="text-xs text-zinc-600 mt-1">
+                  Get yours from{" "}
+                  <a href="https://hub.docker.com/settings/security" target="_blank" className="text-blue-400 hover:underline">
+                    hub.docker.com/settings/security
                   </a>
                 </p>
               </div>
